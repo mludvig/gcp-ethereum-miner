@@ -1,0 +1,4 @@
+auth.*.json
+*.tfvars
+.terraform*
+terraform.tfstate*

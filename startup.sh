@@ -16,4 +16,4 @@ set -e
 echo nameserver 127.0.0.1 > /etc/resolv.conf
 
 cd /home/garbagetruck/bin/
-nohup ./pool_ethermine.sh > /tmp/ethminer.log 2>&1 &
+nohup ./pool_ethermine.sh ${wallet_address} > /tmp/ethminer.log 2>&1 &

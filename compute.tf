@@ -111,7 +111,7 @@ resource "google_compute_region_instance_group_manager" "m" {
   name                             = "${each.value.gpu}-${each.value.region}"
   base_instance_name               = "m-${each.value.gpu}"
   distribution_policy_target_shape = "ANY"
-  target_size                      = 16
+  target_size                      = var.group_size
 
   version {
     instance_template = google_compute_instance_template.m[each.value.gpu].id

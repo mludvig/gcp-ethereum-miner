@@ -1,6 +1,10 @@
-variable "project" {}
+variable "project" {
+  default = null
+}
 
-variable "credentials_file" {}
+variable "credentials_file" {
+  default = null
+}
 
 variable "region" {
   default = "us-central1"

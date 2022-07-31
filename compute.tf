@@ -10,7 +10,7 @@ data "template_file" "startup_script" {
 }
 
 locals {
-  prefix = try(terraform.workspace, "m")
+  prefix = terraform.workspace == "default" ? "m" : terraform.workspace
   gpus = {
     t4 = {
       accelerator_type  = "nvidia-tesla-t4"

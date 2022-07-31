@@ -10,6 +10,7 @@ data "template_file" "startup_script" {
 }
 
 locals {
+  prefix = try(terraform.workspace, "m")
   gpus = {
     t4 = {
       accelerator_type  = "nvidia-tesla-t4"
@@ -66,8 +67,8 @@ locals {
     }
   }
   gpu_regions = distinct(flatten([
-    for gpu_name, gpu_params in local.gpus : [
-      for region in gpu_params.regions : {
+    for gpu_name in var.gpu_types : [
+      for region in local.gpus[gpu_name].regions : {
         gpu    = gpu_name
         region = region
       }
@@ -76,12 +77,12 @@ locals {
 }
 
 resource "google_compute_instance_template" "m" {
-  for_each     = local.gpus
-  name         = "m-${each.key}"
-  machine_type = each.value.instance_type
+  for_each     = toset(var.gpu_types)
+  name         = "${local.prefix}-${each.key}"
+  machine_type = local.gpus[each.value].instance_type
   guest_accelerator {
-    type  = each.value.accelerator_type
-    count = each.value.accelerator_count
+    type  = local.gpus[each.value].accelerator_type
+    count = local.gpus[each.value].accelerator_count
   }
   scheduling {
     preemptible                 = true
@@ -108,8 +109,8 @@ resource "google_compute_instance_template" "m" {
 resource "google_compute_region_instance_group_manager" "m" {
   for_each                         = { for entry in local.gpu_regions : "${entry.gpu}.${entry.region}" => entry }
   region                           = each.value.region
-  name                             = "${each.value.gpu}-${each.value.region}"
-  base_instance_name               = "m-${each.value.gpu}"
+  name                             = "${local.prefix}-${each.value.gpu}-${each.value.region}"
+  base_instance_name               = "${local.prefix}-${each.value.gpu}"
   distribution_policy_target_shape = "ANY"
   target_size                      = var.group_size
 

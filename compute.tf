@@ -1,5 +1,7 @@
 data "google_compute_image" "gpu_image" {
-  family = "gpu-1"
+  project = "ml-images"
+  #name = "c2-deeplearning-pytorch-1-12-cu113-v20220701-debian-10"
+  family = "pytorch-1-12-gpu-debian-10"
 }
 
 data "template_file" "startup_script" {
@@ -89,7 +91,7 @@ locals {
 
 resource "google_compute_instance_template" "m" {
   for_each     = { for entry in local.gpu_provms : "${entry.gpu}.${entry.prov_m}" => entry }
-  name         = "${local.prefix}-${each.value.gpu}-${each.value.prov_m}"
+  name_prefix  = "${local.prefix}-${each.value.gpu}-${each.value.prov_m}-"
   machine_type = local.gpus[each.value.gpu].instance_type
   guest_accelerator {
     type  = local.gpus[each.value.gpu].accelerator_type
@@ -116,6 +118,10 @@ resource "google_compute_instance_template" "m" {
     access_config {
     }
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "google_compute_region_instance_group_manager" "m" {
@@ -128,5 +134,11 @@ resource "google_compute_region_instance_group_manager" "m" {
 
   version {
     instance_template = google_compute_instance_template.m["${each.value.gpu}.${each.value.prov_m}"].id
+  }
+
+  update_policy {
+    type                         = "PROACTIVE"
+    minimal_action               = "REPLACE"
+    instance_redistribution_type = "NONE"
   }
 }

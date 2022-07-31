@@ -21,3 +21,7 @@ variable "gpu_types" {
 variable "group_size" {
   default = 16
 }
+
+variable "provisioning_models" {
+  default = ["SPOT", "STANDARD"]
+}

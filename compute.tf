@@ -66,28 +66,40 @@ locals {
       ]
     }
   }
-  gpu_regions = distinct(flatten([
+  gpu_provms = distinct(flatten([
     for gpu_name in var.gpu_types : [
-      for region in local.gpus[gpu_name].regions : {
+      for prov_m in var.provisioning_models : {
         gpu    = gpu_name
-        region = region
+        prov_m = prov_m == "SPOT" ? "spot" : "std"
       }
+    ]
+  ]))
+  gpu_provms_regions = distinct(flatten([
+    for gpu_name in var.gpu_types : [
+      for prov_m in var.provisioning_models : [
+        for region in local.gpus[gpu_name].regions : {
+          gpu    = gpu_name
+          prov_m = prov_m == "SPOT" ? "spot" : "std"
+          region = region
+        }
+      ]
     ]
   ]))
 }
 
 resource "google_compute_instance_template" "m" {
-  for_each     = toset(var.gpu_types)
-  name         = "${local.prefix}-${each.key}"
-  machine_type = local.gpus[each.value].instance_type
+  for_each     = { for entry in local.gpu_provms : "${entry.gpu}.${entry.prov_m}" => entry }
+  name         = "${local.prefix}-${each.value.gpu}-${each.value.prov_m}"
+  machine_type = local.gpus[each.value.gpu].instance_type
   guest_accelerator {
-    type  = local.gpus[each.value].accelerator_type
-    count = local.gpus[each.value].accelerator_count
+    type  = local.gpus[each.value.gpu].accelerator_type
+    count = local.gpus[each.value.gpu].accelerator_count
   }
   scheduling {
-    preemptible                 = true
-    provisioning_model          = "SPOT"
-    instance_termination_action = "STOP"
+    preemptible                 = each.value.prov_m == "spot" ? true : false
+    provisioning_model          = each.value.prov_m == "spot" ? "SPOT" : "STANDARD"
+    instance_termination_action = each.value.prov_m == "spot" ? "STOP" : null
+    on_host_maintenance         = each.value.prov_m == "spot" ? null : "TERMINATE"
     automatic_restart           = false
   }
 
@@ -107,14 +119,14 @@ resource "google_compute_instance_template" "m" {
 }
 
 resource "google_compute_region_instance_group_manager" "m" {
-  for_each                         = { for entry in local.gpu_regions : "${entry.gpu}.${entry.region}" => entry }
+  for_each                         = { for entry in local.gpu_provms_regions : "${entry.gpu}.${entry.prov_m}.${entry.region}" => entry }
   region                           = each.value.region
-  name                             = "${local.prefix}-${each.value.gpu}-${each.value.region}"
-  base_instance_name               = "${local.prefix}-${each.value.gpu}"
+  name                             = "${local.prefix}-${each.value.gpu}-${each.value.prov_m}-${each.value.region}"
+  base_instance_name               = "${local.prefix}-${each.value.gpu}-${each.value.prov_m}"
   distribution_policy_target_shape = "ANY"
   target_size                      = var.group_size
 
   version {
-    instance_template = google_compute_instance_template.m[each.value.gpu].id
+    instance_template = google_compute_instance_template.m["${each.value.gpu}.${each.value.prov_m}"].id
   }
 }

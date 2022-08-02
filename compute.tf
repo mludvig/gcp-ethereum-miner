@@ -140,5 +140,6 @@ resource "google_compute_region_instance_group_manager" "m" {
     type                         = "PROACTIVE"
     minimal_action               = "REPLACE"
     instance_redistribution_type = "NONE"
+    max_unavailable_fixed        = 16
   }
 }

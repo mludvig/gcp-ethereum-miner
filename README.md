@@ -3,6 +3,10 @@
 Terraform template for mining Ethereum (ETH) crypto currency on Google
 Cloud Platform (GCP) GPU-enabled VM instances.
 
+<img align="centre" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Google_Cloud_logo.svg/320px-Google_Cloud_logo.svg.png"/>
+
+<img align="right" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Ethereum_logo_2014.svg/128px-Ethereum_logo_2014.svg.png"/>
+
 ## Important!
 
 * GCP is very sensitive about crypto mining on their platform. The scripts and
@@ -15,6 +19,10 @@ Cloud Platform (GCP) GPU-enabled VM instances.
 * Ethereum mining may not be profitable at all times and it can get _very expensive
   very quickly_ - you have been warned! Unless you've got access to a free GCP account
   it may not be the wisest thing to do!
+
+## Medium article
+
+Check out my blog post [**Easy Etherum mining on GCP**](https://medium.com/coinmonks/easy-ethereum-mining-on-gcp-576f0aaaeeed) for more details.
 
 ## Quick start
 
@@ -75,7 +83,17 @@ You will see how Terraform starts creating the Instance Templates and Instance G
 When it's done head over to the [VM console](https://console.cloud.google.com/compute/instances)
 and you should see some instances starting up. 
 
+## GPU Quotas
+
 If there are none check out the [Instance Groups](https://console.cloud.google.com/compute/instanceGroups/list)
-console and in there the ERRORS tab in some of the IGs to figure out what's going on. Most likely you'll be limited by Quotas.
+console and in there the ERRORS tab in some of the IGs to figure out what's going on. 
+Most likely you'll be limited by **GPU Quotas** and will see messages like:
+
+* Instance creation failed: Quota GPUS_ALL_REGIONS exceeded. Limit 0.0 globally.
+* Instance creation failed: Quota PREEMTIBLE_NVIDIA_T4_GPUS exceeded. Limit 0.0 in region us-central1.
+
+If that's the case head to *IAM -> Quotas*, search for the above (e.g. GPUS_ALL_REGIONS) and try to get them increased.
+
+The form will ask for a reason or justification. Needless to say that "Crypto mining" is not a good one to put forward :)
 
 ## Happy mining!

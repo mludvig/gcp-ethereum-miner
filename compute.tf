@@ -12,7 +12,8 @@ data "template_file" "startup_script" {
 }
 
 locals {
-  prefix = terraform.workspace == "default" ? "m" : terraform.workspace
+  # prefix is either ${var.prefix} if defined, or ${terraform.workspace} if not "default" or "m" otherwise
+  prefix = coalesce(var.prefix, terraform.workspace == "default" ? "m" : terraform.workspace)
   gpus = {
     t4 = {
       accelerator_type  = "nvidia-tesla-t4"

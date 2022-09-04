@@ -29,3 +29,7 @@ variable "group_size" {
 variable "provisioning_models" {
   default = ["SPOT", "STANDARD"]
 }
+
+variable "prefix" {
+  default = ""
+}

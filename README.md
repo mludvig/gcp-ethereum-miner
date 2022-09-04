@@ -1,6 +1,6 @@
-# GCP Ethereum Miner
+# GCP Ethereum (ETH) and Ethereum Classic (ETC) Miner
 
-Terraform template for mining Ethereum (ETH) crypto currency on Google
+Terraform template for mining _Ethereum (ETH)_ and _Ethereum Classic (ETC)_ crypto currencies on Google
 Cloud Platform (GCP) GPU-enabled VM instances.
 
 <img align="centre" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Google_Cloud_logo.svg/320px-Google_Cloud_logo.svg.png"/>
@@ -54,6 +54,9 @@ I assume that you already have a _GCP Project_ set up, let's say it's called `mi
         cloudshell:~/gcp-ethereum-miner (mining-project-12345)$
 
 5. Configure `terraform.tfvars` to your liking.
+
+        # Ethereum (ETH) or Ethereum Classic (ETC)
+        coin_name           = "ETC"
 
         # Ethereum wallet address
         wallet_address      = "0x99b36B44cf319c9E0ed4619ee2050B21ECac2c15"

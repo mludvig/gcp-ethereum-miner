@@ -5,7 +5,7 @@ data "google_compute_image" "gpu_image" {
 }
 
 data "template_file" "startup_script" {
-  template = file("startup.sh")
+  template = file("startup-${var.coin_name}.sh")
   vars = {
     wallet_address = var.wallet_address
   }
@@ -142,5 +142,6 @@ resource "google_compute_region_instance_group_manager" "m" {
     minimal_action               = "REPLACE"
     instance_redistribution_type = "NONE"
     max_unavailable_fixed        = 16
+    replacement_method           = "SUBSTITUTE"
   }
 }

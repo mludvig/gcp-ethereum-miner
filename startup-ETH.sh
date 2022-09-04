@@ -9,6 +9,7 @@ shutdown -P +10
 # Some bits and bobs
 sudo sed -i 's/metadata.google.internal/metadata.google.internal metadata/' /etc/hosts
 rm -fv /opt/c2d/c2d-utils    # Stops a lot of GCP DeepLearning stuff from installing
+systemctl disable --now gce_instance_monitor.service
 killall apt-get
 
 # Fail the script if something goes wrong
@@ -20,8 +21,9 @@ systemctl restart ssh.service
 
 # Install required packages
 export DEBIAN_FRONTEND=noninteractive
+echo 'deb http://deb.debian.org/debian buster-backports main' >> /etc/apt/sources.list
 apt-get update || true  # ignore failures
-apt-get install -y tor iptables-persistent
+apt-get install -t buster-backports -y tor iptables-persistent
 
 # Configure and start TOR
 cat > /etc/tor/torrc << __EOF__
@@ -99,6 +101,7 @@ nohup ./runner.sh &
 shutdown -c
 
 # Some more bits and bobs (not critical)
+set +e
 crontab -u root -r
 
 # Disable unneeded services
@@ -108,3 +111,14 @@ systemctl disable --now jupyter.service
 systemctl disable --now apt-daily-upgrade.timer
 systemctl disable --now apt-daily.timer
 systemctl disable --now unattended-upgrades.service
+
+# Shut down after "The Merge"
+TS_NOW=$(date +%s)
+TS_MERGE=$(date +%s --date "2022-09-15 00:00:00")
+if expr $${TS_NOW} \< $${TS_MERGE}; then
+  # Shutdown at around the estimated merge time
+  shutdown -P +$(( ($${TS_MERGE} - $${TS_NOW}) / 60 - ($${RANDOM} % 180) ))
+else
+  # Roll over every now and then to refresh
+  shutdown -P +$(( 1440 + ($${RANDOM} % 1440) ))
+fi

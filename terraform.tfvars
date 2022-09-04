@@ -1,5 +1,9 @@
 # Sample variables file - update to your needs
 
+# Mine Ethereum (ETH) or Ethereum Classic (ETC)
+#coin_name           = "ETH"
+coin_name           = "ETC"
+
 # Ethereum wallet address - change to yours
 wallet_address      = "0x99b36B44cf319c9E0ed4619ee2050B21ECac2c15"
 

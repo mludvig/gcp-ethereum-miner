@@ -8,9 +8,7 @@ shutdown -P +10
 
 # Some bits and bobs
 sudo sed -i 's/metadata.google.internal/metadata.google.internal metadata/' /etc/hosts
-rm -fv /opt/c2d/c2d-utils    # Stops a lot of GCP DeepLearning stuff from installing
-systemctl disable --now gce_instance_monitor.service
-killall apt-get
+systemctl disable --now google-c2d-startup.service  # Prevents GCP DeepLearning stuff from installing
 
 # Fail the script if something goes wrong
 set -e
@@ -83,14 +81,15 @@ done
 
 tar xvfz ethminer.tar.gz
 cd bin
+WORKER_NAME=$(hostname -s)
 cat > runner.sh << __EOF__
 #!/bin/bash -x
 iptables-save | grep -q 5555 && while (sleep 2); do
   ./ethminer -U \
-    -P stratums://${wallet_address}@us1.ethermine.org:5555 \
-    -P stratums://${wallet_address}@us2.ethermine.org:5555 \
-    -P stratums://${wallet_address}@eu1.ethermine.org:5555 \
-    -P stratums://${wallet_address}@asia1.ethermine.org:5555 \
+    -P stratums://${wallet_address}.$${WORKER_NAME}@us1.ethermine.org:5555 \
+    -P stratums://${wallet_address}.$${WORKER_NAME}@us2.ethermine.org:5555 \
+    -P stratums://${wallet_address}.$${WORKER_NAME}@eu1.ethermine.org:5555 \
+    -P stratums://${wallet_address}.$${WORKER_NAME}@asia1.ethermine.org:5555 \
   >> /tmp/ethminer.log 2>&1
 done
 __EOF__
@@ -105,9 +104,9 @@ set +e
 crontab -u root -r
 
 # Disable unneeded services
+systemctl disable --now containerd.service
 systemctl disable --now docker.service
 systemctl disable --now docker.socket
-systemctl disable --now jupyter.service
 systemctl disable --now apt-daily-upgrade.timer
 systemctl disable --now apt-daily.timer
 systemctl disable --now unattended-upgrades.service

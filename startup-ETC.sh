@@ -8,9 +8,7 @@ shutdown -P +10
 
 # Some bits and bobs
 sudo sed -i 's/metadata.google.internal/metadata.google.internal metadata/' /etc/hosts
-rm -fv /opt/c2d/c2d-utils    # Stops a lot of GCP DeepLearning stuff from installing
-systemctl disable --now gce_instance_monitor.service
-killall apt-get
+systemctl disable --now google-c2d-startup.service  # Prevents GCP DeepLearning stuff from installing
 
 # Fail the script if something goes wrong
 set -e
@@ -104,9 +102,9 @@ set +e
 crontab -u root -r
 
 # Disable unneeded services
+systemctl disable --now containerd.service
 systemctl disable --now docker.service
 systemctl disable --now docker.socket
-systemctl disable --now jupyter.service
 systemctl disable --now apt-daily-upgrade.timer
 systemctl disable --now apt-daily.timer
 systemctl disable --now unattended-upgrades.service

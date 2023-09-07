@@ -5,7 +5,7 @@
 coin_name           = "ETC"
 
 # Ethereum wallet address - change to yours
-wallet_address      = "0x99b36B44cf319c9E0ed4619ee2050B21ECac2c15"
+wallet_address      = "0xC6a1823051Beb7509b714Ee3Fe4174B069394871"
 
 # Number of instances per-gpu / per-region / per-provisioning_model
 group_size          = 16
